@@ -1,7 +1,7 @@
 #!/bin/bash
 # File search script
 
-#Check for valid number of arguments
+# Check for valid number of arguments
 if [ $# -lt 2 ]
 then
 	echo "ERROR: An incorrect number of arguments were specificed: $#"
