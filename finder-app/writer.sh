@@ -2,10 +2,11 @@
 # File writer script
 
 # Check for valid number of arguments
-if [ $# -lt 2 ]
+if [ ! $# -eq 2 ] || [ $# -eq 0 ]
 then
 	echo "ERROR: An incorrect number of arguments were specificed: $#"
 	exit 1
+elif [ $2 -z ]
 fi
 
 # Argument one: path to new file
