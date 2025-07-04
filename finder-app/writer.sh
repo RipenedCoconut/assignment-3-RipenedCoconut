@@ -7,6 +7,8 @@ then
 	echo "ERROR: An incorrect number of arguments were specificed: $#"
 	exit 1
 elif [ $2 -z ]
+	echo "ERROR: No string arument was specified"
+	exit 1
 fi
 
 # Argument one: path to new file
