@@ -4,9 +4,10 @@
 # Check for valid number of arguments
 if [ ! $# -eq 2 ] || [ $# -eq 0 ]
 then
-	echo "ERROR: An incorrect number of arguments were specificed: $#"
+	echo "ERROR: An incorrect number of arguments were specified: $#"
 	exit 1
 elif [ $2 -z ]
+then
 	echo "ERROR: No string arument was specified"
 	exit 1
 fi
