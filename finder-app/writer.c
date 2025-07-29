@@ -57,12 +57,6 @@ int main(int argc, char *argv[]) {
 	  syslog(LOG_ERR, "Error: unable to close file.");
 	  return 1;
   }
- 
-  
-  
-  //DEBUG
-  printf("\nfileP: %s", argv[1]);
-  printf("\nsearchS: %s\n", argv[2]);
-  
+   
   return 0;
 } 
