@@ -8,7 +8,7 @@ then
 	exit 1
 elif [ $2 -z ]
 then
-	echo "ERROR: No string arument was specified"
+	echo "ERROR: No string argument was specified"
 	exit 1
 fi
 
