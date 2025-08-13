@@ -80,7 +80,7 @@ bool do_exec(int count, ...)
 	}
 		
 	
-	int ret = execv(command[0], command);
+	int ret = execv(command[0], &command[0]);
 	if (ret < 0) {
 		successRet = false;
 	}
@@ -142,7 +142,7 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
 			
 			close(fd);
 			
-			int ret = execv(command[0], command);
+			int ret = execv(command[0], &command[0]);
 			if (ret < 0) {
 				successRet = false;
 			}
