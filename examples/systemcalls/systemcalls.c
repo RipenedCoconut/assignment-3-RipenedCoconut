@@ -1,4 +1,10 @@
 #include "systemcalls.h"
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <fcntl.h>
+#include <sys/wait.h>
+#include <stdbool.h> 
 
 /**
  * @param cmd the command to execute with system()
@@ -17,7 +23,14 @@ bool do_system(const char *cmd)
  *   or false() if it returned a failure
 */
 
-    return true;
+	int sysRet = system(cmd);
+	bool successRet = true;
+	
+	if (sysRet < 0) {
+		successRet = false;
+	}
+		
+    return successRet;
 }
 
 /**
@@ -47,7 +60,7 @@ bool do_exec(int count, ...)
     command[count] = NULL;
     // this line is to avoid a compile warning before your implementation is complete
     // and may be removed
-    command[count] = command[count];
+   // command[count] = command[count];
 
 /*
  * TODO:
@@ -59,9 +72,27 @@ bool do_exec(int count, ...)
  *
 */
 
+	bool successRet = true;
+	
+	pid_t pid = fork();
+	if (pid < 0) {
+		successRet = false;
+	}
+		
+	
+	int ret = execv(command[0], &command[count]);
+	if (ret < 0) {
+		successRet = false;
+	}
+	
+	int waitRet = wait(0);
+	if (waitRet < 0) {
+		successRet = false;
+	}
+	
     va_end(args);
 
-    return true;
+    return successRet;
 }
 
 /**
@@ -82,7 +113,7 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
     command[count] = NULL;
     // this line is to avoid a compile warning before your implementation is complete
     // and may be removed
-    command[count] = command[count];
+  
 
 
 /*
@@ -92,7 +123,20 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
  *   The rest of the behaviour is same as do_exec()
  *
 */
-
+	int kidpid;
+	int fd = open("redirected.txt", O_WRONLY|O_TRUNC|O_CREAT, 0644);
+	if (fd < 0) { perror("open"); abort(); }
+	
+	switch (kidpid = fork()) {
+		case -1: perror("fork"); abort();
+		case 0:
+		if (dup2(fd, 1) < 0) { perror("dup2"); abort(); }
+			close(fd);
+			execv(command[0], &command[count]); perror("execvp"); abort();
+		default:
+    close(fd);
+	}
+    
     va_end(args);
 
     return true;
