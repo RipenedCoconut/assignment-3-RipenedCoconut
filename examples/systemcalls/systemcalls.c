@@ -16,9 +16,11 @@
 */
 bool do_system(const char *cmd)
 {
+	//create process using system with command 'cmd'
 	int sysRet = system(cmd);
 	bool successRet = true;
 	
+	//return false if failed
 	if (sysRet < 0) {
 		successRet = false;
 	}
@@ -50,16 +52,21 @@ bool do_exec(int count, ...)
     {
         command[i] = va_arg(args, char *);
     }
-   command[count] = NULL;
+    
+    //last element in array must be null for execv
+    command[count] = NULL;
 
+	//initialize process id and status variables for child
 	int status;
-	
 	pid_t pid = fork();
+	
+	//in case of fork() error (-1), report and return
 	if (pid == -1) {
 		perror ("fork");
 		return false;
 	}
 	
+	//clean process using command at first element in command[]
 	if(pid == 0){	
 		int ret = execv(command[0], command);
 		if (ret == -1) {
@@ -68,12 +75,13 @@ bool do_exec(int count, ...)
 		}
 	}
 	
+	//start wait and store status, report and return if failed
 	int waitRet = waitpid(pid, &status, 0);
 	if (waitRet == -1) {
 		perror("wait");
 		return false;
 	}
-	
+	//check for exit status from wait
 	if ((WEXITSTATUS(status) != 0) || WIFSIGNALED(status))
     {
         return false;
@@ -99,22 +107,28 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
         command[i] = va_arg(args, char *);
     }
    
-   command[count] = NULL;
+    //last element in array must be null for execv
+    command[count] = NULL;
 
-		
+	//initialize process id and status variables for child
 	pid_t pid;
 	int status;
+	
+	//open file for process output
 	int fd = open(outputfile, O_WRONLY|O_TRUNC|O_CREAT, 0644);
 	if (fd < 0){ 
 		perror("open");
 		return false;
 	}
 	
+	//in case of fork() error (-1), report and return
 	switch (pid = fork()) {
 		case -1: 
 			perror("fork");
+			close(fd);
 			return false;
 			
+		//clean process using command at first element in command[]
 		case 0:
 			dup2(fd, 1);
 			int ret = execv(command[0], command);
@@ -126,18 +140,23 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
 		default:
 	}
     
+    //start wait and store status, report and return if failed
 	int waitRet = waitpid(pid, &status, 0);
 	if (waitRet == -1) {
 		perror("wait");
+		close(fd);
 		return false;
 	}
 	
+	//check for exit status from wait
 	if ((WEXITSTATUS(status) != 0) || WIFSIGNALED(status))
     {
+		close(fd);
         return false;
     }
-	close(fd);
     
+    //close process output
+	close(fd);
     va_end(args);
 
     return true;
