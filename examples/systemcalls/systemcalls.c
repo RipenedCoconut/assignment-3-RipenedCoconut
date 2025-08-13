@@ -62,8 +62,6 @@ bool do_exec(int count, ...)
 	
 	if(pid == 0){	
 		int ret = execv(command[0], command);
-	
-		printf("\n\nexecv directory:%s\n\n", command[0]);
 		if (ret == -1) {
 			perror("execv");
 			exit(EXIT_FAILURE);
@@ -127,7 +125,6 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
 
 		default:
 	}
-    
     
 	int waitRet = waitpid(pid, &status, 0);
 	if (waitRet == -1) {
