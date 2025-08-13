@@ -5,6 +5,7 @@
 #include <fcntl.h>
 #include <sys/wait.h>
 #include <stdbool.h> 
+#include <stdarg.h>
 
 /**
  * @param cmd the command to execute with system()
@@ -57,10 +58,9 @@ bool do_exec(int count, ...)
     {
         command[i] = va_arg(args, char *);
     }
-    command[count] = NULL;
     // this line is to avoid a compile warning before your implementation is complete
     // and may be removed
-   // command[count] = command[count];
+   command[count] = NULL;
 
 /*
  * TODO:
@@ -80,7 +80,7 @@ bool do_exec(int count, ...)
 	}
 		
 	
-	int ret = execv(command[0], &command[count]);
+	int ret = execv(command[0], command);
 	if (ret < 0) {
 		successRet = false;
 	}
@@ -110,7 +110,6 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
     {
         command[i] = va_arg(args, char *);
     }
-    command[count] = NULL;
    
   
 
@@ -143,7 +142,7 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
 			
 			close(fd);
 			
-			int ret = execv(command[0], &command[count]);
+			int ret = execv(command[0], command);
 			if (ret < 0) {
 				successRet = false;
 			}
