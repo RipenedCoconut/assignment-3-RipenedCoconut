@@ -16,14 +16,6 @@
 */
 bool do_system(const char *cmd)
 {
-
-/*
- * TODO  add your code here
- *  Call the system() function with the command set in the cmd
- *   and return a boolean true if the system() call completed with success
- *   or false() if it returned a failure
-*/
-
 	int sysRet = system(cmd);
 	bool successRet = true;
 	
@@ -58,41 +50,39 @@ bool do_exec(int count, ...)
     {
         command[i] = va_arg(args, char *);
     }
-    // this line is to avoid a compile warning before your implementation is complete
-    // and may be removed
    command[count] = NULL;
 
-/*
- * TODO:
- *   Execute a system command by calling fork, execv(),
- *   and wait instead of system (see LSP page 161).
- *   Use the command[0] as the full path to the command to execute
- *   (first argument to execv), and use the remaining arguments
- *   as second argument to the execv() command.
- *
-*/
-
-	bool successRet = true;
+	int status;
 	
 	pid_t pid = fork();
-	if (pid < 0) {
-		successRet = false;
-	}
-		
-	
-	int ret = execv(command[0], &command[0]);
-	if (ret < 0) {
-		successRet = false;
+	if (pid == -1) {
+		perror ("fork");
+		return false;
 	}
 	
-	int waitRet = wait(0);
-	if (waitRet < 0) {
-		successRet = false;
+	if(pid == 0){	
+		int ret = execv(command[0], command);
+	
+		printf("\n\nexecv directory:%s\n\n", command[0]);
+		if (ret == -1) {
+			perror("execv");
+			exit(EXIT_FAILURE);
+		}
 	}
+	
+	int waitRet = waitpid(pid, &status, 0);
+	if (waitRet == -1) {
+		perror("wait");
+		return false;
+	}
+	
+	if ((WEXITSTATUS(status) != 0) || WIFSIGNALED(status))
+    {
+        return false;
+    }
 	
     va_end(args);
-
-    return successRet;
+    return true;
 }
 
 /**
@@ -111,52 +101,47 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
         command[i] = va_arg(args, char *);
     }
    
-  
+   command[count] = NULL;
 
-
-/*
- * TODO
- *   Call execv, but first using https://stackoverflow.com/a/13784315/1446624 as a refernce,
- *   redirect standard out to a file specified by outputfile.
- *   The rest of the behaviour is same as do_exec()
- *
-*/
-	bool successRet = true;
-	
-	int kidpid;
+		
+	pid_t pid;
+	int status;
 	int fd = open(outputfile, O_WRONLY|O_TRUNC|O_CREAT, 0644);
 	if (fd < 0){ 
 		perror("open");
-		successRet = false;
+		return false;
 	}
 	
-	switch (kidpid = fork()) {
+	switch (pid = fork()) {
 		case -1: 
 			perror("fork");
-			successRet = false;
+			return false;
 			
 		case 0:
-			if (dup2(fd, 1) < 0){
-				perror("dup2");
+			dup2(fd, 1);
+			int ret = execv(command[0], command);
+			if (ret == -1) {
+				perror("execv");
+				exit(EXIT_FAILURE);
 			}
-			
-			close(fd);
-			
-			int ret = execv(command[0], &command[0]);
-			if (ret < 0) {
-				successRet = false;
-			}
-			
-			int waitRet = wait(0);
-			if (waitRet < 0) {
-				successRet = false;
-			}
-			
+
 		default:
-			close(fd);
 	}
+    
+    
+	int waitRet = waitpid(pid, &status, 0);
+	if (waitRet == -1) {
+		perror("wait");
+		return false;
+	}
+	
+	if ((WEXITSTATUS(status) != 0) || WIFSIGNALED(status))
+    {
+        return false;
+    }
+	close(fd);
     
     va_end(args);
 
-    return successRet;
+    return true;
 }
