@@ -111,8 +111,7 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
         command[i] = va_arg(args, char *);
     }
     command[count] = NULL;
-    // this line is to avoid a compile warning before your implementation is complete
-    // and may be removed
+   
   
 
 
@@ -124,7 +123,7 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
  *
 */
 	int kidpid;
-	int fd = open("redirected.txt", O_WRONLY|O_TRUNC|O_CREAT, 0644);
+	int fd = open(outputfile, O_WRONLY|O_TRUNC|O_CREAT, 0644);
 	if (fd < 0) { perror("open"); abort(); }
 	
 	switch (kidpid = fork()) {
@@ -132,7 +131,7 @@ bool do_exec_redirect(const char *outputfile, int count, ...)
 		case 0:
 		if (dup2(fd, 1) < 0) { perror("dup2"); abort(); }
 			close(fd);
-			execv(command[0], &command[count]); perror("execvp"); abort();
+			execv(command[0], &command[count]); perror("execv"); abort();
 		default:
     close(fd);
 	}
